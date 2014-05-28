@@ -29,7 +29,7 @@ TODO:
 
 Usage:
 ------
-
+```
 >>> import peparser
 >>> pe = peparser.PeParser('test.exe')
 >>> print 'Address Of Entry Point: ', hex(pe.optionalHeader.AddressOfEntryPoint + pe.optionalHeader.ImageBase)
@@ -53,3 +53,4 @@ Usage:
 >>>   print '\n'
 >>>   offset += size
 ...
+```
