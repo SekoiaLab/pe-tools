@@ -8,7 +8,7 @@ import os
 import mmap
 import struct
 import time
-
+import signeddata
 
 IMAGE_DOS_SIGNATURE=0x5A4D
 IMAGE_NT_OPTIONAL_HDR32_MAGIC=0x10b
@@ -172,6 +172,44 @@ class Section(object):
         return output
 
 
+class Signature(object):
+
+    def __init__(self, data, offset, size):
+        print 'Signature -- Address=', hex(offset), 'Size=', hex(size)
+        self.offset = offset
+        self.size   = size
+        self._unpack(data)
+        
+    def _unpack(self, data):
+        header_struct = struct.unpack("<LHH", data[self.offset:self.offset+8])
+        self.Length          = header_struct[0]
+        self.Revision        = header_struct[1]
+        self.CertificateType = header_struct[2]
+        #self.bCertificate    = bytearray(data[self.offset+8:self.offset+8+self.Length])
+        self.bCertificate    = data[self.offset+8:self.offset+8+self.Length]
+        #print 'Signature -- Length=', self.Length
+        #print 'bCertificate Length=', len(self.bCertificate)
+
+    def saveDerToFile(self, filename):
+        # save signature to a file (skip 19 bytes to remove SEQUENCE+OBJECTID+[0] structures)
+        with open(filename, "wb") as f:
+            f.write(self.bCertificate[19:])
+            
+    def saveCertificatesNamesToCsvFile(self, filename):
+        sd = signeddata.SignedData(self.bCertificate[19:])
+        names = sd.getNamesFromCertificate('issuer')
+        names += sd.getNamesFromCertificate('subject')
+        with open(filename, "w") as f:
+            f.write(names)
+
+    def __str__(self):
+        output = 'Security signature:\n--------------\n'
+        output += 'Length:         ' + hex(self.Length) + '\n'
+        output += 'Revision:       ' + hex(self.Revision) + '\n'
+        output += 'CertificateType:' + hex(self.CertificateType)
+        return output
+
+
 class OptionalHeader(object):
 
     def __init__(self, data, offset):
@@ -314,6 +352,7 @@ class PeParser(object):
         self.Sections = []
         self.Imports = []
         self.Errors = ''
+        self.signature = None
         # start parsing
         self.open(filename)
         if self.mapped == None:
@@ -357,6 +396,10 @@ class PeParser(object):
         if len(self.optionalHeader.DataDirectories) > IMAGE_DIRECTORY_ENTRY_IMPORT:
             (index, VirtualAddress, Size) = self.optionalHeader.DataDirectories[IMAGE_DIRECTORY_ENTRY_IMPORT]
             self._get_import_table(self.RVAtoOffset(VirtualAddress), Size)
+            
+        if len(self.optionalHeader.DataDirectories) > IMAGE_DIRECTORY_ENTRY_SECURITY:
+            (index, VirtualAddress, Size) = self.optionalHeader.DataDirectories[IMAGE_DIRECTORY_ENTRY_SECURITY]
+            self.signature = Signature(self.mapped, VirtualAddress, Size)
 
     def __str__nt_header(self):
         output = 'NT header:\n---------\n'
