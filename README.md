@@ -28,6 +28,12 @@ TODO:
   printing them.
 - Add p-code arguments display in pcodes module.
 
+Requirements:
+-------------
+- pyasn1
+- pyasn1-modules
+- distorm3
+
 Usage:
 ------
 ```
@@ -56,6 +62,7 @@ Usage:
 ...
 >>> import peparser
 >>> pe = peparser.PeParser('file.exe')
->>> pe.signature.saveDerToFile('signeddata.der')
->>> pe.signature.saveCertificatesNamesToCsvFile('issuer_subject.csv')
+>>> if pe.signature is not None:
+>>>   pe.signature.saveDerToFile('signeddata.der')
+>>>   pe.signature.saveCertificatesNamesToCsvFile('issuer_subject.csv')
 ```
