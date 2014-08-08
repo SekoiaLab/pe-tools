@@ -4,6 +4,7 @@ What?
 It is a set of python scripts to parse PE and VB5/6 headers in a Windows
 executable file. The peparser module analyses PE headers. The vbparser module
 analyses VB headers and the pcodes module allows disassembly of p-code functions.
+The PE signature can be saved to a file in DER format (pyasn1 needed).
 
 Why?
 ----
@@ -53,4 +54,8 @@ Usage:
 >>>   print '\n'
 >>>   offset += size
 ...
+>>> import peparser
+>>> pe = peparser.PeParser('file.exe')
+>>> pe.signature.saveDerToFile('signeddata.der')
+>>> pe.signature.saveCertificatesNamesToCsvFile('issuer_subject.csv')
 ```
