@@ -175,7 +175,7 @@ class Section(object):
 class Signature(object):
 
     def __init__(self, data, offset, size):
-        print 'Signature -- Address=', hex(offset), 'Size=', hex(size)
+        #print 'Signature -- Address=', hex(offset), 'Size=', hex(size)
         self.offset = offset
         self.size   = size
         self._unpack(data)
@@ -399,7 +399,8 @@ class PeParser(object):
             
         if len(self.optionalHeader.DataDirectories) > IMAGE_DIRECTORY_ENTRY_SECURITY:
             (index, VirtualAddress, Size) = self.optionalHeader.DataDirectories[IMAGE_DIRECTORY_ENTRY_SECURITY]
-            self.signature = Signature(self.mapped, VirtualAddress, Size)
+            if Size > 0:
+                self.signature = Signature(self.mapped, VirtualAddress, Size)
 
     def __str__nt_header(self):
         output = 'NT header:\n---------\n'
@@ -445,11 +446,11 @@ class PeParser(object):
         if self.optionalHeader.Magic   == 0x10b: #32bits
             #print 'result=', hex(self.RVAtoOffset(thunk))
             AddressOfData = struct.unpack("<L", self.mapped[thunk:thunk+4])[0]
-        elif self.PeOptionalHeaderMagic == 0x20b: #64bits
+        elif self.optionalHeader.Magic == 0x20b: #64bits
             AddressOfData = struct.unpack("<Q", self.mapped[thunk:thunk+8])[0]
         else:
             AddressOfData = 0
-            self.Errors += 'get_import_descriptors: self.PeOptionalHeaderMagic has unknown value ('+ hex(self.PeOptionalHeaderMagic) + ')\n' 
+            self.Errors += 'get_import_descriptors: self.optionalHeader.Magic has unknown value ('+ hex(self.optionalHeader.Magic) + ')\n' 
         while AddressOfData <> 0:
             func_name = ''
             ordinal = 0
