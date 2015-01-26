@@ -201,7 +201,12 @@ class Signature(object):
         names += sd.getNamesFromCertificate('subject')
         with open(filename, "w") as f:
             f.write(names)
-
+    def getissuer(self):
+        sd=signeddata.SignedData(self.bCertificate[19:])
+        return sd.getNamesFromCertificate('issuer')
+    def getsubject(self):
+        sd=signeddata.SignedData(self.bCertificate[19:])
+        return sd.getNamesFromCertificate('subject')
     def __str__(self):
         output = 'Security signature:\n--------------\n'
         output += 'Length:         ' + hex(self.Length) + '\n'
