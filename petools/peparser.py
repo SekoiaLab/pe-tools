@@ -360,7 +360,7 @@ class PeParser(object):
         self.signature = None
         # start parsing
         self.open(filename)
-        if self.mapped == None:
+        if self.mapped:
             print 'Unable to open ', filename
             return
         # get DOS header
@@ -384,6 +384,10 @@ class PeParser(object):
                 f.close()
         except IOError:
             pass
+
+    def unmap(self):
+        if self.mapped:
+            self.mapped.close()
 
     def _get_nt_header(self, offset):
         # get PE Header signature
