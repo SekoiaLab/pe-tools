@@ -360,7 +360,7 @@ class PeParser(object):
         self.signature = None
         # start parsing
         self.open(filename)
-        if self.mapped:
+        if not self.mapped:
             print 'Unable to open ', filename
             return
         # get DOS header
